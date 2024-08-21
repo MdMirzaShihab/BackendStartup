@@ -1,4 +1,6 @@
 const { Schema, model } = require('mongoose');
+const bcrypt = require('bcrypt');
+const { defaultImagePath } = require('../secret');
 
 const userSchema = new Schema({
     name: {
@@ -27,17 +29,34 @@ const userSchema = new Schema({
     password:{
         type: String,
         required: [true, 'User password is required'],
-        minlength: [3, "User name shouldn't be less than 3 character "],
-
+        minlength: [7, "User password shouldn't be less than 6 character "],
+        set: (pass) => bcrypt.hashSync(pass, bcrypt.genSaltSync(10))
     },
-})
+
+    image:{
+        type:String,
+        default: defaultImagePath,
+    },
+    address:{
+        type:String,
+        required: [true, 'user adderess is required'],
+    },
+    phone:{
+        type:String,
+        required: [true, 'user phone is required'],
+    },
+    isAdmin:{
+        type:Boolean,
+        default:false
+    },
+    isBanned:{
+        type:Boolean,
+        default:false
+    },
+}, {timeseries:true})
 
 
-const users = [
-    {name: 'Md Mirza Shihab', pass: 1211},
-    {name: 'Sakib Kamal', pass:2111 },
-    {name: 'Tarikur Islam', pass:2222 },
-    
-]
+const User = model('Users', userSchema)
 
-module.exports = users;
+
+module.exports = User;

@@ -4,6 +4,7 @@ const rateLimit = require('express-rate-limit');
 const bodyParser = require('body-parser');
 const userRouter = require('./routers/userRouter');
 const createError = require('http-errors');
+const seedRouter = require('./routers/seedRouter');
 
 
 const rateLimiter = rateLimit(
@@ -24,6 +25,7 @@ app.use(bodyParser.urlencoded({extended: true}));
 
 
 app.use('/api/users', userRouter);
+app.use('/api/seed', seedRouter);
 
 
 app.get("/", rateLimiter, (req, res)=> {
