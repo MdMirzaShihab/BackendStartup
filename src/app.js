@@ -5,6 +5,7 @@ const bodyParser = require('body-parser');
 const userRouter = require('./routers/userRouter');
 const createError = require('http-errors');
 const seedRouter = require('./routers/seedRouter');
+const { errorResponse } = require('./controllers/responseController');
 
 
 const rateLimiter = rateLimit(
@@ -41,8 +42,8 @@ app.use((req, res, next)=> {
 
 // Server error handling
 app.use((err, req, res, next)=> {
-    return res.status(err.status || 500).json({
-        success: false,
+    return errorResponse (res, {
+        statusCode: err.status,
         message: err.message,
     })
 });
