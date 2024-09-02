@@ -4,9 +4,6 @@ const {serverPort} = require('./secret');
 
 
 
-
 app.listen(serverPort, async ()=> {
-    console.log(`Running at http://localhost:${serverPort}`)
     await connectDB()
-
 });

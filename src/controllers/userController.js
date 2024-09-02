@@ -1,6 +1,7 @@
 const createError = require("http-errors");
 const User = require("../models/userModel");
 const { successResponse } = require("./responseController");
+const findWithID = require("../services/findItem");
 
 const getUsers = async (req, res, next) => {
   try {
@@ -46,4 +47,41 @@ const getUsers = async (req, res, next) => {
   }
 };
 
-module.exports = { getUsers };
+
+const getUser = async (req, res, next) => {
+  try {
+
+    const id = req.params.id;
+    const options = {password:0};
+    const user = await findWithID(id, options);
+
+    successResponse(res, {
+      statusCode: 200,
+      message: " user returned successfully",
+      payload: {
+        user
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+const deleteUser = async (req, res, next) => {
+  try {
+
+    const id = req.params.id;
+    const options = {password:0};
+    const user = await findWithID(id, options);
+
+    successResponse(res, {
+      statusCode: 200,
+      message: " user deleted successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = { getUsers, getUser, deleteUser };

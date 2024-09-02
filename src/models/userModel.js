@@ -56,7 +56,7 @@ const userSchema = new Schema({
 }, {timeseries:true})
 
 
-const User = model('Users', userSchema)
+const User = model('User', userSchema)
 
 
 module.exports = User;
