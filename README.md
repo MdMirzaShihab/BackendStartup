@@ -10,3 +10,5 @@
 
 
 ##Express Server Setup
+
+Create .env file -> touch .env
