@@ -13,4 +13,13 @@ const successResponse = (res, { statusCode = 200, message = "Success", payload =
     })
 }
 
-module.exports = { errorResponse, successResponse };
+const dataCreatedResponse = (res, {statusCode = 201, message="Data Successfully Created", payload = {}}) =>{
+    return res.status(statusCode).json({
+        success: true,
+        message: message,
+        payload: payload
+    })
+}
+    
+
+module.exports = { errorResponse, successResponse, dataCreatedResponse };

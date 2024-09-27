@@ -1,6 +1,6 @@
 const createError = require("http-errors");
 const User = require("../models/userModel");
-const { successResponse } = require("./responseController");
+const { successResponse,  dataCreatedResponse} = require("./responseController");
 const findWithID = require("../services/findItem");
 
 const getUsers = async (req, res, next) => {
@@ -59,13 +59,34 @@ const getUser = async (req, res, next) => {
       statusCode: 200,
       message: " user returned successfully",
       payload: {
-        user
+        user 
       },
     });
   } catch (error) {
     next(error);
   }
 };
+
+// POST User
+const postUser = async(req, res, next) =>{
+  const {name, email, password, image, address, phone, isAdmin, isBanned} = req.body;
+  try{
+    const newUser = new User({name, email, password, image, address, phone, isAdmin, isBanned});
+    await newUser.save();
+    dataCreatedResponse(res,{
+      statusCode: 201,
+      message: "User Created Successfully",
+      payload:{
+        newUser
+      },
+    });
+
+  }catch(error){
+    next(error);
+  }
+}
+
+// PUT User
 
 
 const deleteUser = async (req, res, next) => {
@@ -84,4 +105,4 @@ const deleteUser = async (req, res, next) => {
   }
 };
 
-module.exports = { getUsers, getUser, deleteUser };
+module.exports = { getUsers, getUser, postUser, deleteUser };
