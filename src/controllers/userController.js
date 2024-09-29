@@ -1,6 +1,6 @@
 const createError = require("http-errors");
 const User = require("../models/userModel");
-const { successResponse,  dataCreatedResponse} = require("./responseController");
+const { errorResponse, successResponse, dataCreatedResponse} = require("./responseController");
 const findWithID = require("../services/findItem");
 
 const getUsers = async (req, res, next) => {
@@ -25,6 +25,7 @@ const getUsers = async (req, res, next) => {
     const users = await User.find(filter, options)
       .limit(limit)
       .skip((page - 1) * limit);
+    // const users = await User.find(filter, options);
     const count = await User.find(filter).countDocuments();
 
     if (!users) throw createError(404, "No users found");
@@ -57,7 +58,7 @@ const getUser = async (req, res, next) => {
 
     successResponse(res, {
       statusCode: 200,
-      message: " user returned successfully",
+      message: "User returned successfully",
       payload: {
         user 
       },
@@ -89,16 +90,20 @@ const postUser = async(req, res, next) =>{
 // PUT User
 
 
+// DELETE User
 const deleteUser = async (req, res, next) => {
   try {
-
     const id = req.params.id;
     const options = {password:0};
-    const user = await findWithID(id, options);
-
+    const userById = await findWithID(id, options); // Taken from findItem.js findWithID function
+    
+    await User.findByIdAndDelete(userById);
     successResponse(res, {
       statusCode: 200,
-      message: " user deleted successfully",
+      message: "User deleted successfully",
+      payload: {
+        userById 
+      },
     });
   } catch (error) {
     next(error);
