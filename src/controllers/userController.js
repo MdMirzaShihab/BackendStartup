@@ -88,7 +88,25 @@ const postUser = async(req, res, next) =>{
 }
 
 // PUT User
-
+const putUser = async(req, res, next) =>{
+  const updatedData = req.body;
+  const id = req.params.id;
+  const options = {password:0};
+  try{
+    // Here findByIdAndUpdate is from node js. So in the perspective of data showing the new:true is to show new data and runValidators:true is to do the validation part
+    const userById = await User.findByIdAndUpdate(id, updatedData, {new: true, runValidators: true}); 
+    await findWithID(userById, options); 
+    return successResponse(res, {
+      statusCode: 200,
+      message: "User updated successfully",
+      payload: {
+        userById 
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+}
 
 // DELETE User
 const deleteUser = async (req, res, next) => {
@@ -110,4 +128,8 @@ const deleteUser = async (req, res, next) => {
   }
 };
 
-module.exports = { getUsers, getUser, postUser, deleteUser };
+
+
+
+// Taken from userRouter.js
+module.exports = { getUsers, getUser, postUser, putUser, deleteUser };
