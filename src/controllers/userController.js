@@ -1,4 +1,5 @@
 const createError = require("http-errors");
+const fs = require("fs");
 const User = require("../models/userModel");
 const { successResponse } = require("./responseController");
 const findWithID = require("../services/findItem");
@@ -74,6 +75,20 @@ const deleteUser = async (req, res, next) => {
     const id = req.params.id;
     const options = {password:0};
     const user = await findWithID(id, options);
+
+    const userImagePath = user.image;
+    fs.access(userImagePath, (error) => {
+      if (error) {
+        console.error("Error accessing user image file:", error);
+      }
+      else{
+        fs.unlink(userImagePath, (error) => {
+          if (error) throw error;
+          console.log("User image file deleted successfully.");
+        });
+        }
+    }) 
+    await User.findByIdAndDelete({_id:id, isAdmin:false});
 
     successResponse(res, {
       statusCode: 200,

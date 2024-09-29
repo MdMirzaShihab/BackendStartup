@@ -24,13 +24,13 @@ app.use(rateLimiter);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 
-
+// Route to userRoute
 app.use('/api/users', userRouter);
 app.use('/api/seed', seedRouter);
 
 
 app.get("/", rateLimiter, (req, res)=> {
-    res.status(200).send({
+    res.send({
         Message: "Hello to homepage of our server"
     })
 });
