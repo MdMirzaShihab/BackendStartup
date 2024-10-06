@@ -1,8 +1,9 @@
 const createError = require("http-errors");
-const fs = require("fs");
+const fs = require("fs").promises;
 const User = require("../models/userModel");
 const { successResponse } = require("./responseController");
 const findWithID = require("../services/findItem");
+const { deleteImage } = require("../helper/deleteImage");
 
 const getUsers = async (req, res, next) => {
   try {
@@ -77,17 +78,9 @@ const deleteUserByID = async (req, res, next) => {
     const user = await findWithID(User, id, options);
 
     const userImagePath = user.image;
-    fs.access(userImagePath, (error) => {
-      if (error) {
-        console.error("Error accessing user image file:", error);
-      }
-      else{
-        fs.unlink(userImagePath, (error) => {
-          if (error) throw error;
-          console.log("User image file deleted successfully.");
-        });
-        }
-    }) 
+    
+    deleteImage(userImagePath);
+
     await User.findByIdAndDelete({_id:id, isAdmin:false});
 
     successResponse(res, {
