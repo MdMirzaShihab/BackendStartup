@@ -5,6 +5,7 @@ const { successResponse } = require("./responseController");
 const findWithID = require("../services/findItem");
 const { deleteImage } = require("../helper/deleteImage");
 const { createJSONWebToken } = require("../helper/jsonwebtoken");
+const { clientURL } = require("../secret");
 
 const getUsers = async (req, res, next) => {
   try {
@@ -106,6 +107,12 @@ const processRegister = async (req, res, next) => {
 
     const token = createJSONWebToken({name, email, password, phone, address}, process.env.JWT_ACTIVATION_KEY, "1h")
 
+    const emailData = {
+      email,
+      subject: "Activate your account",
+      text: `please click here to activate your account: ${token}`,
+      html: `<h2> Hello ${name}, </h2> <p> please click here to <a href="${clientURL}/api/users/activate/${token}" target="_blank"> activate your account </a> </p>`
+    }
 
 
     successResponse(res, {
