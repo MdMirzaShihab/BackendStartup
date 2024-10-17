@@ -6,6 +6,7 @@ const findWithID = require("../services/findItem");
 const { deleteImage } = require("../helper/deleteImage");
 const { createJSONWebToken } = require("../helper/jsonwebtoken");
 const { clientURL } = require("../secret");
+const { emailWithNodeMailer } = require("../helper/email");
 
 const getUsers = async (req, res, next) => {
   try {
@@ -115,9 +116,18 @@ const processRegister = async (req, res, next) => {
     }
 
 
+    try {
+      await emailWithNodeMailer(emailData);
+    } catch (error) {
+      next(createError(500, `failed to send varification email to ${email}`));
+      return;
+      
+    }
+    
+
     successResponse(res, {
       statusCode: 200,
-      message: " user created successfully",
+      message: `Please check your email: ${email} to activate your account`,
       payload: {
         token
       }

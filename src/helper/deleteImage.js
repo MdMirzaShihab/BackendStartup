@@ -12,16 +12,6 @@ const deleteImage = async (userImagePath) => {
         console.error('Error accessing user image file:', error);
         
     }
-
-
-
-
-
-
-    fs.access(userImagePath)
-    .then(() => fs.unlink(userImagePath))
-    .then(() => console.log('User image file deleted successfully.'))
-    .catch((error) => console.error('Error accessing user image file:', error));
 };
 
 module.exports = { deleteImage };
