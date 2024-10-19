@@ -4,6 +4,7 @@ const rateLimit = require('express-rate-limit');
 const bodyParser = require('body-parser');
 const userRouter = require('./routers/userRouter');
 const productRouter = require('./routers/productRouter');
+const categoryRouter = require('./routers/categoryRouter');
 const createError = require('http-errors');
 const seedRouter = require('./routers/seedRouter');
 const { errorResponse } = require('./controllers/responseController');
@@ -28,6 +29,8 @@ app.use(bodyParser.urlencoded({extended: true}));
 
 app.use('/api/users', userRouter);
 app.use('/api/products', productRouter);
+app.use('/api/categories', categoryRouter);
+
 app.use('/api/seed', seedRouter);
 
 
