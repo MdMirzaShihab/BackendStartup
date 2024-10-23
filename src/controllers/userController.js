@@ -5,8 +5,9 @@ const { successResponse } = require("./responseController");
 const findWithID = require("../services/findItem");
 const { deleteImage } = require("../helper/deleteImage");
 const { createJSONWebToken } = require("../helper/jsonwebtoken");
-const { clientURL } = require("../secret");
+const { clientURL, jwtActivationKey } = require("../secret");
 const { emailWithNodeMailer } = require("../helper/email");
+const jwt = require("jsonwebtoken");
 
 const getUsers = async (req, res, next) => {
   try {
@@ -127,7 +128,7 @@ const processRegister = async (req, res, next) => {
 
     successResponse(res, {
       statusCode: 200,
-      message: `Please check your email: ${email} to activate your account`,
+      message: `Please check your email: ${email} to activate your account within 1 hour`,
       payload: {
         token
       }
@@ -137,5 +138,37 @@ const processRegister = async (req, res, next) => {
   }
 };
 
+const activateUserAccount = async (req, res, next) => {
+  try {
+    const { token } = req.body.token;
+    if (!token) {
+      throw createError(404, "token not found");
+    }
 
-module.exports = { getUsers, getUserByID, deleteUserByID, processRegister };
+    const decoded = jwt.verify(token, jwtActivationKey);
+
+    if (!decoded) {
+      throw createError(401, "the user is not authorized to activate account");
+    }
+
+    const userExists = await User.exists({email:decoded.email});
+    if(userExists){
+      throw createError(409, "user already exists, please login");
+    }
+
+    await User.create(decoded);
+
+
+
+
+    successResponse(res, {
+      statusCode: 201,
+      message: `User has been registered successfully`,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+module.exports = { getUsers, getUserByID, deleteUserByID, processRegister, activateUserAccount };
