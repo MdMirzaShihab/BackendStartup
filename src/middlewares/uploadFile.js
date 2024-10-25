@@ -13,7 +13,6 @@ const storage = multer.diskStorage({
   filename: function (req, file, cb) {
     const extName = path.extname(file.originalname);
     cb(null, Date.now() + "-" + file.originalname.replace(extName, "") + extName);
-    console.log(maxFileSize);
   },
 });
 
