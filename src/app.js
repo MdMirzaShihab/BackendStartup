@@ -7,11 +7,11 @@ const createError = require('http-errors');
 const seedRouter = require('./routers/seedRouter');
 const { errorResponse } = require('./controllers/responseController');
 
-
+// rate limiter to prevent brute force
 const rateLimiter = rateLimit(
     {
-        windowMs: 1*60*1000,
-        limit: 5,
+        windowMs: 1*60*1000, // 1 minute
+        limit: 15,
         Message: 'Too many request from this IP, please try again later.'
     }
 )
@@ -19,8 +19,9 @@ const rateLimiter = rateLimit(
 
 const app = express();
 
+// middlewares
 app.use(morgan("dev"));
-app.use(rateLimiter);
+app.use(rateLimiter); 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 

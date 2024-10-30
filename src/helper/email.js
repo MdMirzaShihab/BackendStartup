@@ -1,7 +1,7 @@
 const nodemailer = require("nodemailer");
 const { smtpUsername, smtpPassword } = require("../secret");
 
-
+// create reusable transporter object using the default SMTP transport
 const transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
     port: 587,
@@ -12,7 +12,7 @@ const transporter = nodemailer.createTransport({
     },
   });
 
-
+// send email function
   const emailWithNodeMailer = async (emailData) => {
     try {
         const mailOptions = {

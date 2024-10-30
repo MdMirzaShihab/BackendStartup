@@ -1,6 +1,7 @@
 const fs = require('fs').promises;
 
 
+// delete user image
 const deleteImage = async (userImagePath) => {
 
     try {

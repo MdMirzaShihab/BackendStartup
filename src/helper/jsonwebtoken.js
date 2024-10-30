@@ -1,5 +1,7 @@
 const jwt = require('jsonwebtoken');
 
+
+// create json web token function to reuse
 const createJSONWebToken = (payload, secretKey, expiresIn) => {
     
     if (typeof payload !== "object" || !payload) {

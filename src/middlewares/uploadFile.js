@@ -1,29 +1,22 @@
 const multer = require("multer");
-const path = require("path");
-const createError = require("http-errors");
-const { MAX_FILE_SIZE, ALLOWED_FILE_TYPES, UPLOAD_USER_IMG_DIRECTORY } = require("../config");
+const { MAX_FILE_SIZE, ALLOWED_FILE_TYPES } = require("../config");
 const maxFileSize = Number(MAX_FILE_SIZE);
 
+const storage = multer.memoryStorage();
 
-
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, UPLOAD_USER_IMG_DIRECTORY);
-  },
-  filename: function (req, file, cb) {
-    const extName = path.extname(file.originalname);
-    cb(null, Date.now() + "-" + file.originalname.replace(extName, "") + extName);
-  },
-});
-
+//file filter function
 const fileFilter = (req, file, cb) => {
-    const extName = path.extname(file.originalname);
-    if (!ALLOWED_FILE_TYPES.includes(extName.substring(1))) {
-        return cb(new Error ("Only " + ALLOWED_FILE_TYPES + " file types are allowed"), false);
-    } 
-    cb(null, true);
-}
+  if (!file.mimetype.startsWith("image/")) {
+    return cb(new Error("Only image files are allowed!"), false);
+  }
+  if (file.size > maxFileSize) {
+    return cb(new Error("Max file size exceeded!"), false);
+  }
+  if (!ALLOWED_FILE_TYPES.includes(file.mimetype)) {
+    return cb(new Error("Invalid file type!"), false);
+  }
 
-const upload = multer({ storage: storage, fileFilter: fileFilter, limits: { fileSize: maxFileSize } }); 
-
+  return cb(null, true);
+};
+const upload = multer({ storage: storage, fileFilter: fileFilter });
 module.exports = upload;

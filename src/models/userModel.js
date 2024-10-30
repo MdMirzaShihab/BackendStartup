@@ -9,7 +9,6 @@ const userSchema = new Schema({
         trim: true,
         maxlength: [30, "User name shouldn't be more than 30 character "],
         minlength: [3, "User name shouldn't be less than 3 character "]
-
     },
     email:{
         type: String,
@@ -34,8 +33,9 @@ const userSchema = new Schema({
     },
 
     image:{
-        type:String,
-        default: defaultImagePath,
+        type:Buffer,
+        contentType:String,
+        required: [true, 'user image is required'],
     },
     address:{
         type:String,
