@@ -33,7 +33,7 @@ const validateUserRegistration = [
         .trim()
         .notEmpty()
         .withMessage("phone is required, please enter your phone number")
-        .isMobilePhone("en-US")
+        .matches(/^01[3-9]\d{8}$/)
         .withMessage("please enter a valid phone number"),
 
     body("address")

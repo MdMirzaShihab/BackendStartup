@@ -197,12 +197,13 @@ const processRegister = async (req, res, next) => {
 // activate user account by token
 const activateUserAccount = async (req, res, next) => {
   try {
-    const { token } = req.body.token;
+    const { token } = req.body;
     if (!token) {
       throw createError(404, "token not found");
     }
-
-    const decoded = jwt.verify(token, jwtActivationKey);
+try {
+  
+  const decoded = jwt.verify(token, jwtActivationKey);
 
     if (!decoded) {
       throw createError(401, "the user is not authorized to activate account");
@@ -219,6 +220,17 @@ const activateUserAccount = async (req, res, next) => {
       statusCode: 201,
       message: `User has been registered successfully`,
     });
+} catch (error) {
+  if (error.name === "TokenExpiredError") {
+    throw createError(401, "the token has expired, please try again");
+  } else if (error.name === "JsonWebTokenError") {
+    throw createError(401, "the token is invalid, please try again");
+  } else {
+    throw error;
+  }
+  
+}
+    
   } catch (error) {
     next(error);
   }
