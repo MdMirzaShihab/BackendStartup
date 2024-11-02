@@ -1,5 +1,4 @@
 const createError = require("http-errors");
-const fs = require("fs").promises;
 const User = require("../models/userModel");
 const { successResponse } = require("./responseController");
 const findWithID = require("../services/findItem");

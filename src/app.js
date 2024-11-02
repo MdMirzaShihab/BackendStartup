@@ -1,4 +1,5 @@
 const express = require('express');
+const cookieParser = require('cookie-parser');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 const bodyParser = require('body-parser');
@@ -6,6 +7,7 @@ const userRouter = require('./routers/userRouter');
 const createError = require('http-errors');
 const seedRouter = require('./routers/seedRouter');
 const { errorResponse } = require('./controllers/responseController');
+const authRouter = require('./routers/authRouter');
 
 // rate limiter to prevent brute force
 const rateLimiter = rateLimit(
@@ -20,14 +22,16 @@ const rateLimiter = rateLimit(
 const app = express();
 
 // middlewares
+app.use(cookieParser());
 app.use(morgan("dev"));
 app.use(rateLimiter); 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 
-// Route to userRoute
+// Routes
 app.use('/api/users', userRouter);
 app.use('/api/seed', seedRouter);
+app.use('/api/auth', authRouter);
 
 
 app.get("/", rateLimiter, (req, res)=> {
