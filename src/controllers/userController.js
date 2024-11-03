@@ -247,6 +247,3 @@ module.exports = {
   processRegister,
   activateUserAccount,
 };
-
-// Taken from userRouter.js
-module.exports = { getUsers, getUser, postUser, putUser, deleteUser };
