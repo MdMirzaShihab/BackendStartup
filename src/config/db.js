@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
 const { MongodbURL } = require('../secret');
+
+//DB Connection function
 const connectDB = async (options) => {
     try {
         await mongoose.connect(MongodbURL, options);

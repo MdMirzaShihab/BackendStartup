@@ -1,3 +1,5 @@
+
+//global error response
 const errorResponse = (res, { statusCode = 500, message = "Internal Server Error"}) => {
     return res.status(statusCode).json({
         success: false,
@@ -5,6 +7,7 @@ const errorResponse = (res, { statusCode = 500, message = "Internal Server Error
     })
 }
 
+//global success response
 const successResponse = (res, { statusCode = 200, message = "Success", payload = {}}) => {
     return res.status(statusCode).json({
         success: true,

@@ -2,7 +2,15 @@ const createError = require("http-errors");
 const User = require("../models/userModel");
 const { errorResponse, successResponse, dataCreatedResponse} = require("./responseController");
 const findWithID = require("../services/findItem");
+const { deleteImage } = require("../helper/deleteImage");
+const { createJSONWebToken } = require("../helper/jsonwebtoken");
+const { clientURL, jwtActivationKey } = require("../secret");
+const { emailWithNodeMailer } = require("../helper/email");
+const jwt = require("jsonwebtoken");
+const { MAX_FILE_SIZE } = require("../config");
 
+
+// get all users
 const getUsers = async (req, res, next) => {
   try {
     const search = req.query.search || "";
@@ -49,18 +57,18 @@ const getUsers = async (req, res, next) => {
 };
 
 
-const getUser = async (req, res, next) => {
+// get user by id
+const getUserByID = async (req, res, next) => {
   try {
-
     const id = req.params.id;
-    const options = {password:0};
-    const user = await findWithID(id, options);
+    const options = { password: 0 };
+    const user = await findWithID(User, id, options);
 
     successResponse(res, {
       statusCode: 200,
       message: "User returned successfully",
       payload: {
-        user 
+        user,
       },
     });
   } catch (error) {
@@ -68,54 +76,19 @@ const getUser = async (req, res, next) => {
   }
 };
 
-// POST User
-const postUser = async(req, res, next) =>{
-  const {name, email, password, image, address, phone, isAdmin, isBanned} = req.body;
-  try{
-    const newUser = new User({name, email, password, image, address, phone, isAdmin, isBanned});
-    await newUser.save();
-    dataCreatedResponse(res,{
-      statusCode: 201,
-      message: "User Created Successfully",
-      payload:{
-        newUser
-      },
-    });
-
-  }catch(error){
-    next(error);
-  }
-}
-
-// PUT User
-const putUser = async(req, res, next) =>{
-  const updatedData = req.body;
-  const id = req.params.id;
-  const options = {password:0};
-  try{
-    // Here findByIdAndUpdate is from node js. So in the perspective of data showing the new:true is to show new data and runValidators:true is to do the validation part
-    const userById = await User.findByIdAndUpdate(id, updatedData, {new: true, runValidators: true}); 
-    await findWithID(userById, options); 
-    return successResponse(res, {
-      statusCode: 200,
-      message: "User updated successfully",
-      payload: {
-        userById 
-      },
-    });
-  } catch (error) {
-    next(error);
-  }
-}
-
-// DELETE User
-const deleteUser = async (req, res, next) => {
+// delete user by id
+const deleteUserByID = async (req, res, next) => {
   try {
     const id = req.params.id;
-    const options = {password:0};
-    const userById = await findWithID(id, options); // Taken from findItem.js findWithID function
-    
-    await User.findByIdAndDelete(userById);
+    const options = { password: 0 };
+    const user = await findWithID(User, id, options);
+
+    const userImagePath = user.image;
+
+    deleteImage(userImagePath);
+
+    await User.findByIdAndDelete({ _id: id, isAdmin: false });
+
     successResponse(res, {
       statusCode: 200,
       message: "User deleted successfully",
@@ -128,8 +101,152 @@ const deleteUser = async (req, res, next) => {
   }
 };
 
+// update user by id
+const updateUserByID = async (req, res, next) => {
+  try {
+    const updateId = req.params.id;
+    const options = { password: 0 };
+    await findWithID(User, updateId, options);
+    const updateOptions = { new: true, runValidators: true, context: "query" };
+    let updates = {};
+    for (let key in req.body) {
+      if (["name", "phone", "address", "password"].includes(key)) {
+        updates[key] = req.body[key];
+      }
+    }
+    const image = req.file;
+    if (image) {
+      if (image.size > MAX_FILE_SIZE) {
+        throw createError(400, "User image should be less than 2MB");
+      }
+      updates.image = image.buffer.toString("base64");
+    }
+    const updatedUser = await User.findByIdAndUpdate(
+      updateId,
+      updates,
+      updateOptions
+    ).select("-password");
 
+    if (!updatedUser) {
+      throw createError(404, "user not found");
+    }
 
+    successResponse(res, {
+      statusCode: 200,
+      message: " user profile updated successfully",
+      payload: {
+        updatedUser,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// register user upto sending email
+const processRegister = async (req, res, next) => {
+  try {
+    const { name, email, password, phone, address } = req.body;
+
+    const image = req.file;
+
+    if (!image) {
+      throw createError(400, "User image is required");
+    }
+
+    if (image.size > MAX_FILE_SIZE) {
+      throw createError(400, "User image should be less than 2MB");
+    }
+
+    const imageBufferString = req.file.buffer.toString("base64");
+
+    const userExists = await User.exists({ email: email });
+    if (userExists) {
+      throw createError(409, "user already exists, please login");
+    }
+
+    const token = createJSONWebToken(
+      { name, email, password, phone, address, image: imageBufferString },
+      jwtActivationKey,
+      "1h"
+    );
+
+    const emailData = {
+      email,
+      subject: "Activate your account",
+      text: `please click here to activate your account: ${token}`,
+      html: `<h2> Hello ${name}, </h2> <p> please click here to <a href="${clientURL}/api/users/activate/${token}" target="_blank"> activate your account </a> </p>`,
+    };
+
+    try {
+      await emailWithNodeMailer(emailData);
+    } catch (error) {
+      next(createError(500, `failed to send varification email to ${email}`));
+      return;
+    }
+
+    successResponse(res, {
+      statusCode: 200,
+      message: `Please check your email: ${email} to activate your account within 1 hour`,
+      payload: {
+        token,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// activate user account by token
+const activateUserAccount = async (req, res, next) => {
+  try {
+    const { token } = req.body;
+    if (!token) {
+      throw createError(404, "token not found");
+    }
+try {
+  
+  const decoded = jwt.verify(token, jwtActivationKey);
+
+    if (!decoded) {
+      throw createError(401, "the user is not authorized to activate account");
+    }
+
+    const userExists = await User.exists({ email: decoded.email });
+    if (userExists) {
+      throw createError(409, "user already exists, please login");
+    }
+
+    await User.create(decoded);
+
+    successResponse(res, {
+      statusCode: 201,
+      message: `User has been registered successfully`,
+    });
+} catch (error) {
+  if (error.name === "TokenExpiredError") {
+    throw createError(401, "the token has expired, please try again");
+  } else if (error.name === "JsonWebTokenError") {
+    throw createError(401, "the token is invalid, please try again");
+  } else {
+    throw error;
+  }
+  
+}
+    
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = {
+  getUsers,
+  getUserByID,
+  deleteUserByID,
+  updateUserByID,
+  processRegister,
+  activateUserAccount,
+};
 
 // Taken from userRouter.js
 module.exports = { getUsers, getUser, postUser, putUser, deleteUser };

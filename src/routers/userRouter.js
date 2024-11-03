@@ -1,13 +1,18 @@
 const express = require ('express');
-const { getUsers, getUser, postUser, putUser, deleteUser } = require('../controllers/userController');
+const { getUsers, getUserByID, deleteUserByID, processRegister, activateUserAccount, updateUserByID } = require('../controllers/userController');
+const upload = require('../middlewares/uploadFile');
+const { validateUserRegistration } = require('../validators/auth');
+const { runValidation } = require('../validators');
+const { isLoggedIn, isLoggedOut } = require('../middlewares/auth');
 const userRouter = express.Router();
 
 
-// The id is the unique id given from mongodb. So use that id to getUser(Specific), put & delete
-userRouter.get("/", getUsers);
-userRouter.get('/:id', getUser);
-userRouter.post('/', postUser);
-userRouter.put('/:id', putUser);
-userRouter.delete('/:id', deleteUser);
+
+userRouter.get("/", isLoggedIn, getUsers);
+userRouter.get('/:id', isLoggedIn, getUserByID);
+userRouter.delete('/:id', isLoggedIn, deleteUserByID);
+userRouter.put('/:id', isLoggedIn, upload.single('image'), updateUserByID);
+userRouter.post("/process-register", isLoggedOut, upload.single('image'), validateUserRegistration, runValidation, processRegister);
+userRouter.post("/activate", isLoggedOut, activateUserAccount);
 
 module.exports = userRouter;
