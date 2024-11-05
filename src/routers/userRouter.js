@@ -3,14 +3,14 @@ const { getUsers, getUserByID, deleteUserByID, processRegister, activateUserAcco
 const upload = require('../middlewares/uploadFile');
 const { validateUserRegistration } = require('../validators/auth');
 const { runValidation } = require('../validators');
-const { isLoggedIn, isLoggedOut } = require('../middlewares/auth');
+const { isLoggedIn, isLoggedOut, isAdmin } = require('../middlewares/auth');
 const userRouter = express.Router();
 
 
 
-userRouter.get("/", isLoggedIn, getUsers);
+userRouter.get("/", isLoggedIn, isAdmin, getUsers);
 userRouter.get('/:id', isLoggedIn, getUserByID);
-userRouter.delete('/:id', isLoggedIn, deleteUserByID);
+userRouter.delete('/:id', isLoggedIn, isAdmin, deleteUserByID);
 userRouter.put('/:id', isLoggedIn, upload.single('image'), updateUserByID);
 userRouter.post("/process-register", isLoggedOut, upload.single('image'), validateUserRegistration, runValidation, processRegister);
 userRouter.post("/activate", isLoggedOut, activateUserAccount);

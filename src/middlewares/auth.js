@@ -16,7 +16,8 @@ const isLoggedIn = (req, res, next) => {
       throw createError(401, "Please login first");
     }
 
-    req.user = decoded.user;
+    req.user = decoded;
+
     next();
   } catch (error) {
     next(error);
@@ -44,7 +45,25 @@ const isLoggedOut = (req, res, next) => {
   }
 };
 
+const isAdmin = (req, res, next) => {
+    try {
+        console.log('req.user');
+        const admin = req.user.isAdmin;
+        if (!admin) {
+            throw createError(403, "Forbidden!, admin access only");
+        }
+        console.log(admin);
+
+        next();
+
+
+    } catch (error) {
+      next(error);
+    }
+  };
+
 module.exports = {
   isLoggedIn,
   isLoggedOut,
+  isAdmin
 };
