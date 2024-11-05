@@ -218,6 +218,9 @@ try {
     successResponse(res, {
       statusCode: 201,
       message: `User has been registered successfully`,
+      payload: {
+        user: decoded,
+      }
     });
 } catch (error) {
   if (error.name === "TokenExpiredError") {

@@ -31,23 +31,29 @@ const handleLogin = async (req, res, next) => {
     }
 
     const accessToken = createJSONWebToken(
-      { _id: user._id },
+      { _id: user._id, name: user.name, email: user.email },
       jwtActivationKey,
       "1h"
     );
 
     res.cookie("accessToken", accessToken, {
-      maxAge: 1000 * 60 * 60 * 24, //24 hours
+      maxAge: 1000 * 60 * 60, //15 minutes
       httpOnly: true,
       secure: true,
       sameSite: "none",
     });
 
+
+
     successResponse(res, {
-      statusCode: 200,
+      statusCode: 201,
       message: " user logged in successfully",
       payload: {
-        user,
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        address: user.address,
       },
     });
   } catch (error) {

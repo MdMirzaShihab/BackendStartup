@@ -6,7 +6,7 @@ const authRouter = express.Router();
 
 
 
-authRouter.post("/login", isLoggedOut, handleLogin);
+authRouter.post("/login",isLoggedOut, handleLogin);
 authRouter.post("/logout", isLoggedIn, handleLogout);
 
 
